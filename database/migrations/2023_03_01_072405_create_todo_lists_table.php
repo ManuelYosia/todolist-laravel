@@ -15,7 +15,7 @@ return new class extends Migration
     {
         Schema::create('todo_lists', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id');
+            $table->uuid('user_id');
             $table->string('todo_id')->unique();
             $table->string('todo');
             $table->timestamps();

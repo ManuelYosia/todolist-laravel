@@ -33,10 +33,6 @@ class UserController extends Controller
             ]
         );
 
-        $user_id = uniqid();
-        
-        $validatedData += ['user_id' => $user_id];
-
         User::create($validatedData);
 
         return redirect('/login');  

@@ -3,12 +3,13 @@
 namespace App\Services\Impl;
 
 use App\Models\TodoList;
+use App\Models\User;
 use App\Services\TodoListService;
 use Illuminate\Support\Facades\Session;
 
 class TodoListServiceImpl implements TodoListService
 {
-    public function saveTodo(string $user_id, string $id, string $todo): void
+    public function saveTodo(mixed $user_id, string $id, string $todo): void
     {
         $todo_id = $id;
         TodoList::create([
@@ -18,13 +19,12 @@ class TodoListServiceImpl implements TodoListService
         ]);
     }
 
-    public function getTodo(string $user_id)
+    public function getTodo(mixed $user_id)
     {
-        $todolist = TodoList::all();
+        $user = User::all()->where('user_id', '=', $user_id)->first();
+        $todolist = $user->todolist;
 
-        $userTodolist = $todolist->where('user_id', '=', $user_id);
-
-        return $userTodolist;
+        return $todolist;
     }
 
     public function removeTodo(string $id)
