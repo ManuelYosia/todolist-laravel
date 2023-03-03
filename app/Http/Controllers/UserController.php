@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use App\Services\UserService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -9,12 +10,6 @@ use Illuminate\Http\Response;
 
 class UserController extends Controller
 {
-    private UserService $userService;
-
-    public function __construct(UserService $userService)
-    {
-        $this->userService = $userService;
-    }
 
     public function login(): Response
     {
@@ -23,13 +18,37 @@ class UserController extends Controller
         ]);
     }
 
+    public function register(): Response
+    {
+        return response()->view('user.register');
+    }
+
+    public function doRegister(Request $request): RedirectResponse
+    {
+        $validatedData = $request->validate(
+            [
+                "username" => "required|max:255|unique:users",
+                "email" => "required|max:255|email:dns|unique:users",
+                "password" => "required|min:8"
+            ]
+        );
+
+        $user_id = uniqid();
+        
+        $validatedData += ['user_id' => $user_id];
+
+        User::create($validatedData);
+
+        return redirect('/login');  
+    }
+
     public function doLogin(Request $request): Response|RedirectResponse
     {
-        $user = $request->input('user');
-        $password = $request->input('password');
+        $userInput = $request->input('user');
+        $passwordInput = $request->input('password');
 
         // validate input
-        if(empty($user) || empty($password)){
+        if(empty($userInput) || empty($passwordInput)){
 
             return response()->view('user.login', [
                 "title" => "Login",
@@ -37,8 +56,27 @@ class UserController extends Controller
             ]);
         }
 
-        if($this->userService->login($user, $password)){
-            $request->session()->put('user', $user);
+        $users = User::all();
+
+        $user = $users->where('username', '=', $userInput)->first();
+
+        if($user == null){
+            return response()->view('user.login', [
+                "title" => "Login",
+                "error" => "User not found"
+            ]);
+        }
+
+        $user_id = $user->user_id;
+        $username = $user->username;
+
+        $userPassword = $user->password;
+
+        if($userPassword == $passwordInput){
+            $request->session()->put([
+                'user_id' => $user_id,
+                'username'=>$username
+            ]);
             return redirect('/');
         }
 
@@ -50,7 +88,7 @@ class UserController extends Controller
 
     public function doLogout(Request $request): RedirectResponse
     {
-        $request->session()->forget("user");
+        $request->session()->forget("user_id");
         return redirect('/');
     }
 }

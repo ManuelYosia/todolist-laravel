@@ -2,21 +2,18 @@
 
 namespace App\Services\Impl;
 
+use App\Models\User;
 use App\Services\UserService;
 
-class UserServiceImpl implements UserService
+class UserServiceImpl 
 {
-    private array $user = [
-        "manuel" => "rahasia"
-    ];
-    public function login(string $user, string $password): bool
+    public function login(string $username, string $password)
     {
-        if(!isset($this->user[$user]))
-        {
-            return false;
-        }
+        
 
-        $correctPassword = $this->user[$user];
-        return $password == $correctPassword;
+        
+
+
+        
     }
 }

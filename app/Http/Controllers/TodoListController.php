@@ -6,6 +6,7 @@ use App\Services\TodoListService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Session;
 
 class TodoListController extends Controller
 {
@@ -16,20 +17,24 @@ class TodoListController extends Controller
     }
     public function todoList(Request $request): Response
     {
-        $todolist = $this->todoListService->getTodo();
+        $username = Session::get('username');
+        $user_id = Session::get('user_id');
+        $todolist = $this->todoListService->getTodo($user_id);
 
         return response()->view('todolist.todolist', [
             "title" => "TodoList",
+            "username" => $username,
             "todolist" => $todolist
         ]);
     }
 
     public function addTodo(Request $request): Response|RedirectResponse
     {
+        $user_id = Session::get('user_id');
         $todo = $request->input("todo");
 
         if(empty($todo)){
-            $todolist = $this->todoListService->getTodo();
+            $todolist = $this->todoListService->getTodo($user_id);
 
             return response()->view('todolist.todolist', [
                 "title" => "TodoList",
@@ -38,7 +43,7 @@ class TodoListController extends Controller
             ]);
         }
 
-        $this->todoListService->saveTodo(uniqid(), $todo);
+        $this->todoListService->saveTodo($user_id, uniqid(), $todo);
         return redirect()->action([TodoListController::class, 'todoList']);
     }
 

@@ -2,39 +2,34 @@
 
 namespace App\Services\Impl;
 
+use App\Models\TodoList;
 use App\Services\TodoListService;
 use Illuminate\Support\Facades\Session;
 
 class TodoListServiceImpl implements TodoListService
 {
-    public function saveTodo(string $id, string $todo): void
+    public function saveTodo(string $user_id, string $id, string $todo): void
     {
-        if (!Session::exists('todolist')) {
-            Session::put('todolist', []);
-        }
-
-        Session::push('todolist', [
-            "id" => $id,
+        $todo_id = $id;
+        TodoList::create([
+            "user_id" => $user_id,
+            "todo_id" => $todo_id,
             "todo" => $todo
         ]);
     }
 
-    public function getTodo(): array
+    public function getTodo(string $user_id)
     {
-        return Session::get("todolist",[]);
+        $todolist = TodoList::all();
+
+        $userTodolist = $todolist->where('user_id', '=', $user_id);
+
+        return $userTodolist;
     }
 
     public function removeTodo(string $id)
     {
-        $todolist = Session::get("todolist");
-
-        foreach($todolist as $index => $value){
-            if($id == $value["id"]){
-                unset($todolist[$index]);
-                break;
-            }
-        }
-
-        Session::put('todolist', $todolist);
+        $user_id = Session::get('user_id');
+        $deleted = TodoList::where('user_id', $user_id)->where('todo_id', $id)->delete();
     }
 }
